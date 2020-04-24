@@ -1,0 +1,81 @@
+
+namespace ............
+{
+    public class ReturnEmRow
+    {
+        public IWebElement ReturnRowTable(string manuscriptId)
+        {
+
+            //I have getheards ,this in my lib that returns the table header 
+            var getHeaders = new GetHeader();
+
+
+            Dictionary<string, int> columnHeaders = new Dictionary<string, int>();
+            IWebElement tableElement = Browsers.getDriver.FindElement(By.CssSelector("#datatable"));
+            var tableRows = tableElement.FindElements(By.TagName("tr"));
+
+            bool getColumnHeaders = true;
+
+            foreach (var row in tableRows)
+            {
+                if (getColumnHeaders)
+                {
+                    columnHeaders = getHeaders.GetHeaders(row);
+
+                    getColumnHeaders = false;
+                }
+                else
+                {
+
+                    var rowCells = row.FindElements(By.TagName("td"));
+
+                    foreach (var f in tableRows)
+                    {
+                        if (rowCells[columnHeaders["Manuscript\r\nNumber"]].Text.Contains(manuscriptId))
+                            return row;
+                    }
+                }
+
+
+            }
+
+            return null;
+        }
+
+       
+    }
+}
+
+------------------------------------------------------------------
+
+namespace ..............
+{
+    public class GetHeader
+    {
+        public Dictionary<string, int> GetHeaders(IWebElement headerRow)
+        {
+            var columnHeaders = new Dictionary<string, int>();
+            var rowCells = headerRow.FindElements(By.TagName("th"));
+            var counter = 0;
+            if (!ElementActions.IsElementStale(headerRow))
+            {
+                try
+                {
+                    foreach (var cell in rowCells)
+                    {
+                        columnHeaders[cell.Text] = counter;
+
+                        counter += 1;
+                    }
+                }
+                
+                catch (StaleElementReferenceException elementHasDisappeared)
+                {
+                    Pages.Log.Info("The element is not stale.");
+                }
+            }
+
+            return columnHeaders;
+        }
+    }
+}
